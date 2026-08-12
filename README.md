@@ -1,11 +1,13 @@
 AI Personal Stylist: Digital Closet & Context-Aware Recommender
 
 Executive Summary
+
 **The Problem:** Consumers face severe morning decision fatigue. Despite owning a wardrobe full of solid staples (e.g., the classic white t-shirt, reliable blue and black pants), many users lack the styling expertise to combine them effectively. This leads to a loss of confidence and triggers an expensive cycle of buying new clothes to fix a styling problem, rather than an inventory problem.
 **The Solution:** An AI-powered personal stylist that curates elevated, confidence-boosting outfits using the clothes the user already owns. By factoring in personal body size, fit preferences, and existing staples, the engine maximizes the ROI of the current wardrobe without requiring a premium stylist fee.
 **The Target Audience:** Anyone who wants to consistently elevate their daily presentation and curb unnecessary shopping habits, regardless of their inherent fashion sense.
 
 Core Features & Technical Approach
+
 Behind the scenes, the styling engine relies on several core data inputs and features to generate reliable recommendations:
 **Wardrobe Digitization & Core Staples:** Users upload their existing clothing. The engine identifies versatile basics and categorizes them to build a foundational digital inventory.
 **Fit Profiling:** The onboarding flow captures baseline data on the user's specific size, body proportions, and fit preferences to ensure recommendations actually flatter their shape.
@@ -15,6 +17,7 @@ Behind the scenes, the styling engine relies on several core data inputs and fea
 **Style Analytics Dashboard:** Tracking "cost-per-wear" metrics and identifying the most utilized items to help users curb impulse shopping and understand their true personal style.
 
 Core User Scenarios
+
 To demonstrate the engine's contextual awareness, this prototype focuses on distinct, high-intent user journeys:
 
 1. The University Student
