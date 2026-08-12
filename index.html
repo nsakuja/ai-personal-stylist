@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Personal Stylist - Digital Closet</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#fdf8f6',
+                            100: '#f2e8e5',
+                            500: '#9b7a70',
+                            900: '#4a3b36',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom scrollbar for a polished look */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+        
+        .fade-in { animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .emoji-placeholder {
+            font-size: 4rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans h-screen flex overflow-hidden">
+
+    <aside class="w-20 md:w-64 bg-white border-r border-gray-200 flex flex-col justify-between hidden sm:flex transition-all duration-300">
+        <div>
+            <div class="h-16 flex items-center justify-center md:justify-start md:px-6 border-b border-gray-100">
+                <i class="fa-solid fa-wand-magic-sparkles text-brand-500 text-xl"></i>
+                <span class="ml-3 font-bold text-lg hidden md:block text-brand-900">AI Stylist</span>
+            </div>
+            <nav class="p-4 space-y-2">
+                <a href="#" onclick="switchTab('closet', event)" id="nav-closet" class="nav-item flex items-center p-3 text-brand-500 bg-brand-50 rounded-xl font-medium transition-colors">
+                    <i class="fa-solid fa-shirt w-6 text-center"></i>
+                    <span class="ml-3 hidden md:block">My Closet</span>
+                </a>
+                <a href="#" onclick="switchTab('lookbook', event)" id="nav-lookbook" class="nav-item flex items-center p-3 text-gray-500 hover:bg-gray-50 rounded-xl font-medium transition-colors">
+                    <i class="fa-solid fa-calendar-day w-6 text-center"></i>
+                    <span class="ml-3 hidden md:block">Lookbook</span>
+                </a>
+                <a href="#" onclick="switchTab('analytics', event)" id="nav-analytics" class="nav-item flex items-center p-3 text-gray-500 hover:bg-gray-50 rounded-xl font-medium transition-colors">
+                    <i class="fa-solid fa-chart-pie w-6 text-center"></i>
+                    <span class="ml-3 hidden md:block">Analytics</span>
+                </a>
+            </nav>
+        </div>
+        <div class="p-4">
+            <div class="flex items-center md:px-2">
+                <div class="w-10 h-10 rounded-full bg-brand-100 flex items-center justify-center text-brand-900 font-bold">
+                    <i class="fa-regular fa-user"></i>
+                </div>
+                <div class="ml-3 hidden md:block">
+                    <p class="text-sm font-semibold">Demo User</p>
+                    <p class="text-xs text-gray-500">Free Plan</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col h-full overflow-hidden relative">
+        <!-- Header -->
+        <header class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 z-10 shrink-0">
+            <h1 id="page-title" class="text-xl font-semibold text-gray-800">My Closet</h1>
+            <button id="header-action-btn" onclick="openAddModal()" class="bg-white border border-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition shadow-sm">
+                <i class="fa-solid fa-plus mr-2"></i> Add Item
+            </button>
+        </header>
+
+        <!-- Main Workspace (Closet) -->
+        <div id="view-closet" class="view-section flex-1 overflow-y-auto p-4 md:p-8 bg-gray-50">
+            
+            <!-- Context Setter for AI -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mb-8">
+                <h2 class="text-lg font-semibold mb-4 flex items-center">
+                    <i class="fa-solid fa-robot text-brand-500 mr-2"></i> Ask your AI Stylist
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Weather</label>
+                        <select id="weather-select" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-brand-500 focus:border-brand-500 p-2 border">
+                            <option value="sunny">☀️ Sunny & Warm</option>
+                            <option value="breezy">🌬️ Breezy & Mild</option>
+                            <option value="cold">❄️ Cold & Chilly</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Occasion</label>
+                        <select id="occasion-select" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-brand-500 focus:border-brand-500 p-2 border">
+                            <option value="casual">☕ Casual Brunch / Errand</option>
+                            <option value="work">💼 Office / Board Meeting</option>
+                            <option value="evening">🍸 Date Night / Evening</option>
+                        </select>
+                    </div>
+                    <div class="flex items-end">
+                        <button onclick="generateOutfit()" class="w-full bg-brand-900 text-white font-medium py-2.5 px-4 rounded-lg shadow-md hover:bg-brand-500 transition-colors flex items-center justify-center">
+                            <i class="fa-solid fa-sparkles mr-2"></i> Generate Outfit
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="flex space-x-2 mb-6 overflow-x-auto pb-2">
+                <button onclick="filterCloset('all')" class="filter-btn active bg-brand-900 text-white px-4 py-1.5 rounded-full text-sm font-medium transition whitespace-nowrap" data-filter="all">All Items</button>
+                <button onclick="filterCloset('top')" class="filter-btn bg-white border border-gray-200 text-gray-600 px-4 py-1.5 rounded-full text-sm font-medium hover:bg-gray-50 transition whitespace-nowrap" data-filter="top">Tops</button>
+                <button onclick="filterCloset('bottom')" class="filter-btn bg-white border border-gray-200 text-gray-600 px-4 py-1.5 rounded-full text-sm font-medium hover:bg-gray-50 transition whitespace-nowrap" data-filter="bottom">Bottoms</button>
+                <button onclick="filterCloset('shoes')" class="filter-btn bg-white border border-gray-200 text-gray-600 px-4 py-1.5 rounded-full text-sm font-medium hover:bg-gray-50 transition whitespace-nowrap" data-filter="shoes">Shoes</button>
+                <button onclick="filterCloset('outerwear')" class="filter-btn bg-white border border-gray-200 text-gray-600 px-4 py-1.5 rounded-full text-sm font-medium hover:bg-gray-50 transition whitespace-nowrap" data-filter="outerwear">Outerwear</button>
+                <button onclick="filterCloset('accessory')" class="filter-btn bg-white border border-gray-200 text-gray-600 px-4 py-1.5 rounded-full text-sm font-medium hover:bg-gray-50 transition whitespace-nowrap" data-filter="accessory">Accessories</button>
+            </div>
+
+            <!-- Grid -->
+            <div id="closet-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
+                <!-- Items will be injected here via JS -->
+            </div>
+        </div>
+
+        <!-- Lookbook Workspace -->
+        <div id="view-lookbook" class="view-section hidden flex-1 overflow-y-auto p-4 md:p-8 bg-gray-50">
+            <div class="mb-6 flex justify-between items-center">
+                <h2 class="text-lg font-semibold text-gray-800">Saved Outfits</h2>
+            </div>
+            
+            <!-- Empty State for Lookbook -->
+            <div id="lookbook-empty" class="hidden flex flex-col items-center justify-center py-20 text-center fade-in">
+                <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                    <i class="fa-solid fa-bookmark text-3xl text-gray-300"></i>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-700">No outfits saved yet</h3>
+                <p class="text-gray-500 mt-2 max-w-sm">Generate outfits with your AI Stylist and save your favorites here for quick access.</p>
+                <button onclick="switchTab('closet', event)" class="mt-6 bg-brand-900 text-white px-6 py-2 rounded-lg shadow-sm font-medium hover:bg-brand-500 transition">
+                    Go to Stylist
+                </button>
+            </div>
+
+            <div id="lookbook-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                <!-- Saved outfits injected here via JS -->
+            </div>
+        </div>
+
+        <!-- Analytics Workspace -->
+        <div id="view-analytics" class="view-section hidden flex-1 overflow-y-auto p-4 md:p-8 bg-gray-50">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                <!-- Stats Cards -->
+                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center">
+                    <div class="w-12 h-12 rounded-full bg-brand-50 text-brand-500 flex items-center justify-center text-xl mr-4"><i class="fa-solid fa-shirt"></i></div>
+                    <div>
+                        <p class="text-xs text-gray-500 font-medium uppercase tracking-wide">Total Items</p>
+                        <h3 id="stat-total" class="text-2xl font-bold text-gray-800">0</h3>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center">
+                    <div class="w-12 h-12 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center text-xl mr-4"><i class="fa-solid fa-cloud-sun"></i></div>
+                    <div>
+                        <p class="text-xs text-gray-500 font-medium uppercase tracking-wide">Most Common Weather</p>
+                        <h3 id="stat-weather" class="text-xl font-bold text-gray-800 capitalize">-</h3>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center">
+                    <div class="w-12 h-12 rounded-full bg-purple-50 text-purple-500 flex items-center justify-center text-xl mr-4"><i class="fa-solid fa-briefcase"></i></div>
+                    <div>
+                        <p class="text-xs text-gray-500 font-medium uppercase tracking-wide">Top Occasion</p>
+                        <h3 id="stat-occasion" class="text-xl font-bold text-gray-800 capitalize">-</h3>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center">
+                    <div class="w-12 h-12 rounded-full bg-green-50 text-green-500 flex items-center justify-center text-xl mr-4"><i class="fa-solid fa-layer-group"></i></div>
+                    <div>
+                        <p class="text-xs text-gray-500 font-medium uppercase tracking-wide">Largest Category</p>
+                        <h3 id="stat-category" class="text-xl font-bold text-gray-800 capitalize">-</h3>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                <h3 class="font-bold text-gray-800 mb-6 border-b pb-4">Closet Composition</h3>
+                <div id="analytics-composition" class="space-y-5">
+                    <!-- Progress bars injected here via JS -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal Backdrop -->
+    <div id="outfit-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            
+            <!-- Modal Header -->
+            <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                <h3 class="text-lg font-bold text-gray-800 flex items-center">
+                    <i class="fa-solid fa-sparkles text-brand-500 mr-2"></i> Your Styled Outfit
+                </h3>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 transition">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+
+            <!-- Loading State -->
+            <div id="loading-state" class="p-12 flex flex-col items-center justify-center hidden">
+                <div class="relative w-16 h-16">
+                    <div class="absolute inset-0 border-4 border-brand-100 rounded-full"></div>
+                    <div class="absolute inset-0 border-4 border-brand-500 rounded-full border-t-transparent animate-spin"></div>
+                </div>
+                <p class="mt-6 text-gray-500 font-medium animate-pulse">AI is styling your look...</p>
+            </div>
+
+            <!-- Result State -->
+            <div id="result-state" class="p-6 overflow-y-auto hidden fade-in">
+                <p id="ai-reasoning" class="text-sm text-brand-900 bg-brand-50 p-4 rounded-xl mb-6 italic border border-brand-100">
+                    <!-- AI reasoning injected here -->
+                </p>
+                
+                <div class="flex flex-col md:flex-row gap-6 justify-center items-center">
+                    <!-- Layer 1: Top / Outerwear -->
+                    <div class="flex gap-4 items-center">
+                        <div class="flex flex-col items-center space-y-4">
+                            <div id="outfit-top" class="w-32 h-40 rounded-xl shadow-md border border-gray-100 overflow-hidden relative group"></div>
+                            <i class="fa-solid fa-plus text-gray-300"></i>
+                            <div id="outfit-bottom" class="w-32 h-40 rounded-xl shadow-md border border-gray-100 overflow-hidden relative group"></div>
+                            <i class="fa-solid fa-plus text-gray-300"></i>
+                            <div id="outfit-shoes" class="w-32 h-32 rounded-xl shadow-md border border-gray-100 overflow-hidden relative group"></div>
+                        </div>
+                        
+                        <!-- Accessories Column -->
+                        <div class="flex flex-col items-center justify-center ml-2">
+                            <i class="fa-solid fa-plus text-gray-300 mb-4"></i>
+                            <div id="outfit-accessory" class="w-24 h-24 rounded-xl shadow-md border border-gray-100 overflow-hidden relative group"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Outfit Details -->
+                    <div class="flex-1 bg-gray-50 rounded-2xl p-6 border border-gray-100 w-full">
+                        <h4 class="font-bold text-gray-800 mb-4 border-b pb-2">Outfit Details</h4>
+                        <ul id="outfit-details-list" class="space-y-4 text-sm text-gray-600">
+                            <!-- Details injected here -->
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="p-4 border-t border-gray-100 bg-gray-50 flex justify-end space-x-3">
+                <button onclick="generateOutfit()" class="px-4 py-2 text-gray-600 font-medium hover:bg-gray-200 rounded-lg transition">
+                    <i class="fa-solid fa-rotate-right mr-1"></i> Re-roll
+                </button>
+                <button onclick="saveToLookbook()" class="px-6 py-2 bg-brand-900 text-white font-medium rounded-lg hover:bg-brand-500 shadow-sm transition">
+                    Save to Lookbook
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Item Modal -->
+    <div id="add-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
+            
+            <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                <h3 class="text-lg font-bold text-gray-800 flex items-center">
+                    <i class="fa-solid fa-circle-plus text-brand-500 mr-2"></i> Add to Closet
+                </h3>
+                <button onclick="closeAddModal()" class="text-gray-400 hover:text-gray-600 transition">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+
+            <div class="p-6 overflow-y-auto">
+                <form id="add-item-form" onsubmit="handleAddItem(event)" class="space-y-5">
+                    
+                    <!-- Image Upload -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Item Photo</label>
+                        <div class="flex items-center justify-center w-full">
+                            <label for="item-image" class="flex flex-col items-center justify-center w-full h-40 border-2 border-gray-300 border-dashed rounded-2xl cursor-pointer bg-gray-50 hover:bg-gray-100 transition relative overflow-hidden group">
+                                <div id="image-preview-container" class="flex flex-col items-center justify-center pt-5 pb-6">
+                                    <i class="fa-solid fa-cloud-arrow-up text-3xl text-gray-400 mb-3 group-hover:text-brand-500 transition"></i>
+                                    <p class="mb-2 text-sm text-gray-500"><span class="font-semibold">Click to upload</span></p>
+                                    <p class="text-xs text-gray-400">PNG, JPG or WEBP</p>
+                                </div>
+                                <input id="item-image" type="file" accept="image/*" class="hidden" onchange="previewImage(event)" required />
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Details Grid -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Item Name</label>
+                            <input type="text" id="add-name" required placeholder="e.g. Leather Jacket" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-brand-500 focus:border-brand-500 p-2 border">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Color</label>
+                            <input type="text" id="add-color" required placeholder="e.g. Black" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-brand-500 focus:border-brand-500 p-2 border">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Type</label>
+                            <select id="add-type" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-brand-500 focus:border-brand-500 p-2 border">
+                                <option value="top">Top</option>
+                                <option value="bottom">Bottom</option>
+                                <option value="shoes">Shoes</option>
+                                <option value="outerwear">Outerwear</option>
+                                <option value="accessory">Accessory</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Best For</label>
+                            <select id="add-category" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-brand-500 focus:border-brand-500 p-2 border">
+                                <option value="casual">Casual</option>
+                                <option value="work">Work</option>
+                                <option value="evening">Evening</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Weather Checkboxes -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Weather Suitability</label>
+                        <div class="flex gap-4">
+                            <label class="inline-flex items-center">
+                                <input type="checkbox" name="add-weather" value="sunny" class="rounded text-brand-500 focus:ring-brand-500" checked>
+                                <span class="ml-2 text-sm text-gray-600">Sunny</span>
+                            </label>
+                            <label class="inline-flex items-center">
+                                <input type="checkbox" name="add-weather" value="breezy" class="rounded text-brand-500 focus:ring-brand-500" checked>
+                                <span class="ml-2 text-sm text-gray-600">Breezy</span>
+                            </label>
+                            <label class="inline-flex items-center">
+                                <input type="checkbox" name="add-weather" value="cold" class="rounded text-brand-500 focus:ring-brand-500">
+                                <span class="ml-2 text-sm text-gray-600">Cold</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Submit -->
+                    <div class="pt-4 border-t border-gray-100 flex justify-end">
+                        <button type="submit" class="px-6 py-2.5 bg-brand-900 text-white font-medium rounded-lg hover:bg-brand-500 shadow-sm transition flex items-center">
+                            <i class="fa-solid fa-plus mr-2"></i> Add Item
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification (Hidden by default) -->
+    <div id="toast" class="fixed bottom-6 right-6 bg-gray-900 text-white px-6 py-4 rounded-xl shadow-2xl transform translate-y-24 opacity-0 transition-all duration-300 z-[60] flex items-center">
+        <i id="toast-icon" class="fa-solid fa-circle-check text-green-400 mr-3 text-lg"></i>
+        <span id="toast-message" class="font-medium">Success!</span>
+    </div>
+
+    <script>
+        // Mock Database of Clothing Items
+        // Using emojis for visual placeholders to keep the file standalone without relying on external image links that might break.
+        const defaultClosetData = [
+            // Tops
+            { id: 1, type: 'top', category: 'work', weather: ['sunny', 'breezy'], name: 'Silk Blouse', color: 'White', emoji: '👚' },
+            { id: 2, type: 'top', category: 'casual', weather: ['sunny'], name: 'Graphic Tee', color: 'Black', emoji: '👕' },
+            { id: 3, type: 'top', category: 'evening', weather: ['sunny', 'breezy'], name: 'Satin Camisole', color: 'Emerald', emoji: '🎽' },
+            { id: 4, type: 'top', category: 'work', weather: ['cold', 'breezy'], name: 'Cashmere Turtleneck', color: 'Camel', emoji: '🧥' },
+            { id: 5, type: 'top', category: 'casual', weather: ['cold'], name: 'Chunky Knit Sweater', color: 'Cream', emoji: '🧶' },
+            
+            // Bottoms
+            { id: 6, type: 'bottom', category: 'work', weather: ['sunny', 'breezy', 'cold'], name: 'Tailored Trousers', color: 'Navy', emoji: '👖' },
+            { id: 7, type: 'bottom', category: 'casual', weather: ['sunny', 'breezy'], name: 'Vintage Denim', color: 'Light Blue', emoji: '👖' },
+            { id: 8, type: 'bottom', category: 'evening', weather: ['sunny', 'breezy'], name: 'Pleated Midi Skirt', color: 'Black', emoji: '👗' },
+            { id: 9, type: 'bottom', category: 'work', weather: ['sunny'], name: 'Pencil Skirt', color: 'Charcoal', emoji: '👗' },
+            { id: 10, type: 'bottom', category: 'casual', weather: ['cold'], name: 'Fleece Joggers', color: 'Grey', emoji: '🩳' },
+
+            // Shoes
+            { id: 11, type: 'shoes', category: 'work', weather: ['sunny', 'breezy'], name: 'Leather Loafers', color: 'Brown', emoji: '👞' },
+            { id: 12, type: 'shoes', category: 'casual', weather: ['sunny', 'breezy', 'cold'], name: 'White Sneakers', color: 'White', emoji: '👟' },
+            { id: 13, type: 'shoes', category: 'evening', weather: ['sunny', 'breezy'], name: 'Strappy Heels', color: 'Black', emoji: '👠' },
+            { id: 14, type: 'shoes', category: 'work', weather: ['cold'], name: 'Ankle Boots', color: 'Black', emoji: '👢' },
+            
+            // Outerwear
+            { id: 15, type: 'outerwear', category: 'work', weather: ['breezy', 'cold'], name: 'Trench Coat', color: 'Khaki', emoji: '🧥' },
+            { id: 16, type: 'outerwear', category: 'casual', weather: ['cold'], name: 'Puffer Jacket', color: 'Olive', emoji: '🧥' },
+            { id: 17, type: 'outerwear', category: 'evening', weather: ['breezy', 'cold'], name: 'Leather Moto Jacket', color: 'Black', emoji: '🧥' },
+
+            // Accessories
+            { id: 18, type: 'accessory', category: 'work', weather: ['sunny', 'breezy', 'cold'], name: 'Leather Tote Bag', color: 'Tan', emoji: '👜' },
+            { id: 19, type: 'accessory', category: 'evening', weather: ['sunny', 'breezy', 'cold'], name: 'Gold Hoop Earrings', color: 'Gold', emoji: '💍' },
+            { id: 20, type: 'accessory', category: 'casual', weather: ['sunny', 'breezy', 'cold'], name: 'Canvas Tote', color: 'Cream', emoji: '🛍️' },
+            { id: 21, type: 'accessory', category: 'evening', weather: ['sunny', 'breezy', 'cold'], name: 'Pendant Necklace', color: 'Silver', emoji: '📿' },
+            { id: 22, type: 'accessory', category: 'work', weather: ['sunny', 'breezy', 'cold'], name: 'Classic Watch', color: 'Silver', emoji: '⌚' }
+        ];
+
+        // Initialize from LocalStorage or use defaults
+        let closetData = [];
+        try {
+            const storedCloset = localStorage.getItem('ai_stylist_closet');
+            closetData = storedCloset ? JSON.parse(storedCloset) : [...defaultClosetData];
+        } catch (e) {
+            closetData = [...defaultClosetData];
+        }
+
+        // Helper to save closet state
+        function saveClosetToStorage() {
+            try {
+                localStorage.setItem('ai_stylist_closet', JSON.stringify(closetData));
+            } catch (e) {
+                console.error("Storage quota exceeded", e);
+                showToast("Storage full! Try uploading a smaller image.", true);
+            }
+        }
+
+        const gridElement = document.getElementById('closet-grid');
+        
+        function renderGrid(filterType = 'all') {
+            gridElement.innerHTML = ''; // Clear current
+            
+            const filteredData = filterType === 'all' 
+                ? closetData 
+                : closetData.filter(item => item.type === filterType);
+
+            filteredData.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow border border-gray-100 overflow-hidden cursor-pointer group relative';
+                
+                // Check if the item has an uploaded image, otherwise use the emoji
+                const imageContent = item.image 
+                    ? `<img src="${item.image}" class="w-full h-full object-cover transition-transform group-hover:scale-105" alt="${item.name}">`
+                    : `<div class="h-32 sm:h-40 emoji-placeholder transition-transform group-hover:scale-105">${item.emoji}</div>`;
+
+                card.innerHTML = `
+                    <div class="h-32 sm:h-40 relative bg-gray-100 overflow-hidden">
+                        ${imageContent}
+                        <!-- Delete Button Overlay -->
+                        <button onclick="deleteItem(${item.id}, event)" class="absolute top-2 right-2 bg-white/90 text-red-500 w-8 h-8 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-sm hover:bg-red-50" title="Delete item">
+                            <i class="fa-solid fa-trash-can text-sm"></i>
+                        </button>
+                    </div>
+                    <div class="p-3 sm:p-4 border-t border-gray-50">
+                        <p class="text-xs text-brand-500 font-medium uppercase tracking-wider mb-1">${item.type}</p>
+                        <h4 class="font-semibold text-gray-800 text-sm sm:text-base truncate">${item.color} ${item.name}</h4>
+                        <div class="mt-2 flex space-x-1">
+                            <span class="px-2 py-0.5 bg-gray-100 text-gray-500 rounded text-[10px] uppercase">${item.category}</span>
+                        </div>
+                    </div>
+                `;
+                gridElement.appendChild(card);
+            });
+        }
+
+        function deleteItem(id, event) {
+            // Prevent the click from triggering anything else on the card
+            if (event) event.stopPropagation();
+
+            // Filter out the item with the matching ID
+            closetData = closetData.filter(item => item.id !== id);
+
+            // Save the updated closet to LocalStorage
+            saveClosetToStorage();
+
+            // Re-render the grid using the currently active filter
+            const activeFilterBtn = document.querySelector('.filter-btn.active');
+            const currentFilter = activeFilterBtn ? activeFilterBtn.dataset.filter : 'all';
+            renderGrid(currentFilter);
+
+            // Show a success message
+            showToast("Item removed from closet");
+        }
+
+        function filterCloset(type) {
+            // Update button styles
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                if(btn.dataset.filter === type) {
+                    btn.classList.replace('bg-white', 'bg-brand-900');
+                    btn.classList.replace('text-gray-600', 'text-white');
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.replace('bg-brand-900', 'bg-white');
+                    btn.classList.replace('text-white', 'text-gray-600');
+                    btn.classList.remove('active');
+                }
+            });
+            renderGrid(type);
+        }
+
+        const modal = document.getElementById('outfit-modal');
+        const loadingState = document.getElementById('loading-state');
+        const resultState = document.getElementById('result-state');
+
+        // State variables
+        let currentOutfitData = null; // Temporarily holds generated outfit
+        
+        // Initialize Lookbook from LocalStorage
+        let savedOutfits = [];
+        try {
+            const storedLookbook = localStorage.getItem('ai_stylist_lookbook');
+            savedOutfits = storedLookbook ? JSON.parse(storedLookbook) : [];
+        } catch (e) {
+            savedOutfits = [];
+        }
+
+        // Helper to save lookbook state
+        function saveLookbookToStorage() {
+            localStorage.setItem('ai_stylist_lookbook', JSON.stringify(savedOutfits));
+        }
+
+        function generateOutfit() {
+            // Get Context
+            const weather = document.getElementById('weather-select').value;
+            const occasion = document.getElementById('occasion-select').value;
+            
+            // Show Modal & Loading State
+            modal.classList.remove('hidden');
+            loadingState.classList.remove('hidden');
+            resultState.classList.add('hidden');
+
+            // Simulate API / AI computation time (1.5 seconds)
+            setTimeout(() => {
+                processAILogic(weather, occasion);
+                loadingState.classList.add('hidden');
+                resultState.classList.remove('hidden');
+            }, 1500);
+        }
+
+        function processAILogic(weather, occasion) {
+            // "AI" matching algorithm: Filter by occasion AND weather
+            const matchingTops = closetData.filter(i => i.type === 'top' && (i.category === occasion || i.category === 'casual') && i.weather.includes(weather));
+            const matchingBottoms = closetData.filter(i => i.type === 'bottom' && (i.category === occasion || i.category === 'casual') && i.weather.includes(weather));
+            const matchingShoes = closetData.filter(i => i.type === 'shoes' && (i.category === occasion || i.category === 'casual') && i.weather.includes(weather));
+            const matchingAccessories = closetData.filter(i => i.type === 'accessory' && (i.category === occasion || i.category === 'casual'));
+            
+            // Fallbacks in case filter is too strict (preventing empty arrays)
+            const top = matchingTops.length > 0 ? matchingTops[Math.floor(Math.random() * matchingTops.length)] : closetData.find(i => i.type === 'top');
+            const bottom = matchingBottoms.length > 0 ? matchingBottoms[Math.floor(Math.random() * matchingBottoms.length)] : closetData.find(i => i.type === 'bottom');
+            const shoes = matchingShoes.length > 0 ? matchingShoes[Math.floor(Math.random() * matchingShoes.length)] : closetData.find(i => i.type === 'shoes');
+            const accessory = matchingAccessories.length > 0 ? matchingAccessories[Math.floor(Math.random() * matchingAccessories.length)] : closetData.find(i => i.type === 'accessory');
+
+            // Store current outfit globally so it can be saved if requested
+            currentOutfitData = {
+                id: Date.now(),
+                top: top,
+                bottom: bottom,
+                shoes: shoes,
+                accessory: accessory,
+                weather: weather,
+                occasion: occasion
+            };
+
+            // Render Output
+            renderOutfitItem('outfit-top', top);
+            renderOutfitItem('outfit-bottom', bottom);
+            renderOutfitItem('outfit-shoes', shoes);
+            renderOutfitItem('outfit-accessory', accessory);
+
+            // Generate AI Reasoning text based on context
+            const occasionText = document.getElementById('occasion-select').options[document.getElementById('occasion-select').selectedIndex].text.split(' ')[1];
+            const weatherText = document.getElementById('weather-select').options[document.getElementById('weather-select').selectedIndex].text.split(' ')[1];
+            
+            document.getElementById('ai-reasoning').innerHTML = 
+                `<strong>✨ Stylist Note:</strong> Based on the <em>${weatherText.toLowerCase()}</em> weather and your <em>${occasionText.toLowerCase()}</em> plans, I've paired your ${top.color} ${top.name} with ${bottom.color} ${bottom.name}. The ${shoes.name} and ${accessory.name} complete the look and ensure you're appropriately styled.`;
+
+            // Populate Details List
+            const detailsList = document.getElementById('outfit-details-list');
+            detailsList.innerHTML = `
+                <li class="flex items-start">
+                    <span class="w-6 text-center mr-2 text-brand-500"><i class="fa-solid fa-shirt"></i></span>
+                    <div><strong>Top:</strong> ${top.color} ${top.name}</div>
+                </li>
+                <li class="flex items-start">
+                    <span class="w-6 text-center mr-2 text-brand-500"><i class="fa-solid fa-socks"></i></span>
+                    <div><strong>Bottom:</strong> ${bottom.color} ${bottom.name}</div>
+                </li>
+                <li class="flex items-start">
+                    <span class="w-6 text-center mr-2 text-brand-500"><i class="fa-solid fa-shoe-prints"></i></span>
+                    <div><strong>Footwear:</strong> ${shoes.color} ${shoes.name}</div>
+                </li>
+                <li class="flex items-start">
+                    <span class="w-6 text-center mr-2 text-brand-500"><i class="fa-solid fa-gem"></i></span>
+                    <div><strong>Accessory:</strong> ${accessory.color} ${accessory.name}</div>
+                </li>
+            `;
+        }
+
+        function renderOutfitItem(elementId, item) {
+            const el = document.getElementById(elementId);
+            
+            const imageContent = item.image 
+                ? `<img src="${item.image}" class="absolute inset-0 w-full h-full object-cover shadow-inner" alt="${item.name}">`
+                : `<div class="absolute inset-0 emoji-placeholder bg-white text-6xl shadow-inner">${item.emoji}</div>`;
+
+            el.innerHTML = `
+                ${imageContent}
+                <div class="absolute bottom-0 inset-x-0 bg-white/90 backdrop-blur text-xs p-1 text-center font-medium border-t border-gray-100">
+                    ${item.name}
+                </div>
+            `;
+        }
+
+        function closeModal() {
+            modal.classList.add('hidden');
+        }
+
+        // --- Add Item Modal Logic ---
+        const addModal = document.getElementById('add-modal');
+        let uploadedImageBase64 = null;
+
+        function openAddModal() {
+            addModal.classList.remove('hidden');
+        }
+
+        function closeAddModal() {
+            addModal.classList.add('hidden');
+            document.getElementById('add-item-form').reset();
+            resetImagePreview();
+        }
+
+        function resetImagePreview() {
+            uploadedImageBase64 = null;
+            document.getElementById('image-preview-container').innerHTML = `
+                <i class="fa-solid fa-cloud-arrow-up text-3xl text-gray-400 mb-3 group-hover:text-brand-500 transition"></i>
+                <p class="mb-2 text-sm text-gray-500"><span class="font-semibold">Click to upload</span></p>
+                <p class="text-xs text-gray-400">PNG, JPG or WEBP</p>
+            `;
+        }
+
+        function previewImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    uploadedImageBase64 = e.target.result;
+                    document.getElementById('image-preview-container').innerHTML = `
+                        <img src="${uploadedImageBase64}" class="w-full h-full object-cover rounded-xl" />
+                    `;
+                }
+                reader.readAsDataURL(file); // Converts the image to a base64 string
+            }
+        }
+
+        function handleAddItem(event) {
+            event.preventDefault(); // Stop form from refreshing the page
+
+            // Gather Data
+            const type = document.getElementById('add-type').value;
+            const name = document.getElementById('add-name').value;
+            const color = document.getElementById('add-color').value;
+            const category = document.getElementById('add-category').value;
+            
+            // Gather selected weather checkboxes
+            const weatherElements = document.querySelectorAll('input[name="add-weather"]:checked');
+            const weather = Array.from(weatherElements).map(el => el.value);
+
+            if (weather.length === 0) {
+                showToast("Please select at least one weather condition.", true);
+                return;
+            }
+
+            if (!uploadedImageBase64) {
+                showToast("Please upload an image for the item.", true);
+                return;
+            }
+
+            // Create new item object
+            const newItem = {
+                id: Date.now(), // Use timestamp for unique ID instead of array length
+                type: type,
+                category: category,
+                weather: weather,
+                name: name,
+                color: color,
+                image: uploadedImageBase64,
+                emoji: '✨' // Fallback
+            };
+
+            // Add to database
+            closetData.push(newItem);
+            
+            // Save to LocalStorage
+            saveClosetToStorage();
+
+            // Close modal and refresh grid
+            closeAddModal();
+            
+            // Render the grid based on currently active filter
+            const activeFilterBtn = document.querySelector('.filter-btn.active');
+            const currentFilter = activeFilterBtn ? activeFilterBtn.dataset.filter : 'all';
+            renderGrid(currentFilter);
+            
+            showToast("Item successfully added to your closet!");
+        }
+
+        // --- Routing & Toast Logic ---
+        
+        // Displays a temporary success or error message
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            const icon = document.getElementById('toast-icon');
+            document.getElementById('toast-message').innerText = message;
+            
+            if (isError) {
+                icon.className = 'fa-solid fa-circle-exclamation text-red-400 mr-3 text-lg';
+            } else {
+                icon.className = 'fa-solid fa-circle-check text-green-400 mr-3 text-lg';
+            }
+            
+            toast.classList.remove('translate-y-24', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-24', 'opacity-0');
+            }, 3000);
+        }
+
+        // Handles switching between sidebar tabs
+        function switchTab(tabId, event) {
+            if (event) event.preventDefault();
+            
+            // 1. Update Navigation UI active states
+            document.querySelectorAll('.nav-item').forEach(el => {
+                el.classList.remove('text-brand-500', 'bg-brand-50');
+                el.classList.add('text-gray-500');
+            });
+            const activeNav = document.getElementById('nav-' + tabId);
+            if (activeNav) {
+                activeNav.classList.remove('text-gray-500');
+                activeNav.classList.add('text-brand-500', 'bg-brand-50');
+            }
+
+            // 2. Hide all views, show targeted view
+            document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
+            document.getElementById('view-' + tabId).classList.remove('hidden');
+
+            // 3. Update Header Title & trigger specific renders
+            const pageTitle = document.getElementById('page-title');
+            const actionBtn = document.getElementById('header-action-btn');
+            
+            if (tabId === 'closet') {
+                pageTitle.innerText = 'My Closet';
+                actionBtn.classList.remove('hidden'); // Show Add Item button
+                renderGrid('all');
+            } else if (tabId === 'lookbook') {
+                pageTitle.innerText = 'Lookbook';
+                actionBtn.classList.add('hidden'); // Hide Add Item button
+                renderLookbook();
+            } else if (tabId === 'analytics') {
+                pageTitle.innerText = 'Analytics';
+                actionBtn.classList.add('hidden'); // Hide Add Item button
+                renderAnalytics();
+            }
+        }
+
+        // --- Lookbook Logic ---
+        function saveToLookbook() {
+            if (currentOutfitData) {
+                savedOutfits.push(currentOutfitData);
+                saveLookbookToStorage();
+                closeModal();
+                showToast("Outfit saved to Lookbook!");
+            }
+        }
+
+        function renderLookbook() {
+            const grid = document.getElementById('lookbook-grid');
+            const emptyState = document.getElementById('lookbook-empty');
+            
+            grid.innerHTML = '';
+            
+            if (savedOutfits.length === 0) {
+                emptyState.classList.remove('hidden');
+                grid.classList.add('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            grid.classList.remove('hidden');
+
+            // Reverse array to show newest saved outfits first
+            [...savedOutfits].reverse().forEach(outfit => {
+                const card = document.createElement('div');
+                card.className = 'bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden group hover:shadow-md transition-shadow';
+                
+                // Helper to render image or emoji fallback for lookbook cards
+                const getVisual = (item) => item.image 
+                    ? `<img src="${item.image}" class="w-full h-full object-cover" alt="${item.name}">`
+                    : `<div class="w-full h-full flex items-center justify-center bg-gray-50 text-4xl">${item.emoji}</div>`;
+
+                card.innerHTML = `
+                    <div class="p-4 border-b border-gray-50 flex justify-between items-center bg-gray-50/50">
+                        <span class="text-xs font-semibold uppercase tracking-wider text-brand-500 bg-brand-50 px-2 py-1 rounded-md">
+                            ${outfit.occasion} / ${outfit.weather}
+                        </span>
+                        <button onclick="removeOutfit(${outfit.id})" class="text-gray-400 hover:text-red-500 transition" title="Delete outfit">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </div>
+                    <!-- Visual layout of the outfit -->
+                    <div class="flex h-48">
+                        <div class="w-1/2 border-r border-gray-100 p-2 flex flex-col space-y-2 bg-white">
+                            <div class="h-1/2 rounded-lg overflow-hidden border border-gray-100 relative shadow-inner">
+                                ${getVisual(outfit.top)}
+                            </div>
+                            <div class="h-1/2 rounded-lg overflow-hidden border border-gray-100 relative shadow-inner">
+                                ${getVisual(outfit.bottom)}
+                            </div>
+                        </div>
+                        <div class="w-1/2 p-2 bg-white flex flex-col space-y-2">
+                            <div class="h-1/2 w-full rounded-lg overflow-hidden border border-gray-100 relative shadow-inner">
+                                ${getVisual(outfit.shoes)}
+                            </div>
+                            <div class="h-1/2 w-full rounded-lg overflow-hidden border border-gray-100 relative shadow-inner">
+                                ${getVisual(outfit.accessory || {emoji: '✨', name: 'Accessory'})}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function removeOutfit(id) {
+            savedOutfits = savedOutfits.filter(o => o.id !== id);
+            saveLookbookToStorage();
+            renderLookbook();
+            showToast("Outfit removed");
+        }
+
+        // --- Analytics Logic ---
+        function renderAnalytics() {
+            // 1. Calculate basic statistics
+            const total = closetData.length;
+            document.getElementById('stat-total').innerText = total;
+
+            const typeCounts = { top: 0, bottom: 0, shoes: 0, outerwear: 0, accessory: 0 };
+            const weatherCounts = {};
+            const occasionCounts = {};
+
+            // Parse database
+            closetData.forEach(item => {
+                if (typeCounts[item.type] !== undefined) typeCounts[item.type]++;
+                occasionCounts[item.category] = (occasionCounts[item.category] || 0) + 1;
+                item.weather.forEach(w => { weatherCounts[w] = (weatherCounts[w] || 0) + 1; });
+            });
+
+            // Determine top metrics
+            const topType = Object.keys(typeCounts).reduce((a, b) => typeCounts[a] > typeCounts[b] ? a : b);
+            const topOccasion = Object.keys(occasionCounts).reduce((a, b) => occasionCounts[a] > occasionCounts[b] ? a : b);
+            const topWeather = Object.keys(weatherCounts).reduce((a, b) => weatherCounts[a] > weatherCounts[b] ? a : b);
+
+            document.getElementById('stat-category').innerText = topType;
+            document.getElementById('stat-occasion').innerText = topOccasion;
+            document.getElementById('stat-weather').innerText = topWeather;
+
+            // 2. Render Progress Bars for Closet Composition
+            const compositionDiv = document.getElementById('analytics-composition');
+            compositionDiv.innerHTML = ''; // Clear previous
+            
+            // Brand matching colors for the progress bars
+            const colors = { top: 'bg-brand-500', bottom: 'bg-brand-700', shoes: 'bg-brand-900', outerwear: 'bg-gray-400', accessory: 'bg-yellow-500' };
+
+            Object.keys(typeCounts).forEach(type => {
+                const count = typeCounts[type];
+                const percentage = Math.round((count / total) * 100) || 0;
+                
+                compositionDiv.innerHTML += `
+                    <div>
+                        <div class="flex justify-between text-sm font-medium mb-1 text-gray-700">
+                            <span class="capitalize">${type}</span>
+                            <span>${count} items (${percentage}%)</span>
+                        </div>
+                        <div class="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
+                            <div class="${colors[type]} h-2.5 rounded-full fade-in" style="width: ${percentage}%"></div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // Initialize App
+        window.onload = () => {
+            renderGrid('all');
+        };
+    </script>
+</body>
+</html>
