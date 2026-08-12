@@ -45,3 +45,12 @@ To demonstrate the engine's contextual awareness, this prototype focuses on dist
 **The Use Case:** An active professional is mapping out training gear for a marathon.
 
 **The AI Output:** The engine suggests a layered combination optimized for early-morning temperature transitions and identifies a missing critical item (e.g., anti-blister running socks).
+
+## Metrics for Success (KPIs)
+To evaluate product-market fit, user engagement, and commercial viability, this product tracks three core metrics:
+
+**Primary Engagement (North Star): Outfit Adoption Rate.** The percentage of AI-generated outfit recommendations that the user actively logs as "worn" or "saved." This directly measures the algorithm's accuracy, contextual relevance, and value delivery.
+
+**Monetization & Conversion: Affiliate Click-Through Rate (CTR).** The conversion rate on the "Smart Gap Recommendations" feature. This measures how effectively the engine drives targeted e-commerce purchases for missing wardrobe items without feeling like traditional advertising.
+
+**Retention: Weekly Active Days.** The average number of days per week a user consults the dashboard during their morning routine. This indicates habit formation and proves the product is successfully eliminating daily decision fatigue.
