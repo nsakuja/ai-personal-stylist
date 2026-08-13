@@ -1,5 +1,7 @@
 # AI Personal Stylist: Digital Closet & Context-Aware Recommender
 
+Link: https://nsakuja.github.io/ai-personal-stylist/ 
+
 ## Executive Summary
 
 **The Problem:** Consumers face severe morning decision fatigue. Despite owning a wardrobe full of solid staples (e.g., the classic white t-shirt, reliable blue and black pants), many users lack the styling expertise to combine them effectively. This leads to a loss of confidence and triggers an expensive cycle of buying new clothes to fix a styling problem, rather than an inventory problem.
